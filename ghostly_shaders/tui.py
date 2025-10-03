@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import curses
-from typing import Callable, List, Set
+from typing import Callable, List, Optional, Set
 
 from .shaders import Shader
 
 
 def run_tui(
     shaders: List[Shader],
-    on_apply: Callable[[Shader], None],
+    on_apply: Callable[[List[Shader]], None],
     initial_index: int = 0,
+    initial_selected: Optional[List[int]] = None,
 ) -> None:
     if not shaders:
         raise ValueError("No shaders available to display")
@@ -25,6 +26,11 @@ def run_tui(
         message = ""
         selected_order: List[int] = []
         selected_set: Set[int] = set()
+
+        if initial_selected:
+            filtered = [idx for idx in initial_selected if 0 <= idx < len(shaders)]
+            selected_order.extend(filtered)
+            selected_set.update(filtered)
 
         while True:
             stdscr.erase()
@@ -82,8 +88,7 @@ def run_tui(
                     targets = [shaders[highlight]]
 
                 try:
-                    for shader in targets:
-                        on_apply(shader)
+                    on_apply(targets)
                 except Exception as exc:  # pragma: no cover - surfaced via UI
                     message = f"Error: {exc}"
                 else:

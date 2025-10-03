@@ -35,12 +35,13 @@ ghostly-shaders
 
 ### What happens when you apply a shader?
 
-1. The source `.glsl` file is copied to
-   `~/.config/ghostty/shaders/shader.glsl` (customisable via
-   `--shader-output`).
-2. Unless you pass `--no-config`, the tool ensures the Ghostty config file
-   (default `~/.config/ghostty/config`) contains
-   `custom-shader = ~/.config/ghostty/shaders/shader.glsl`.
+1. The queued shaders are copied into `~/.config/ghostty/shaders/` (customisable
+   via `--shader-output`). The first shader is written to
+   `shader.glsl`; subsequent shaders are stored alongside it with numbered file
+   names that preserve the selection order.
+2. Unless you pass `--no-config`, the tool rewrites the Ghostty config file
+   (default `~/.config/ghostty/config`) so it contains one `custom-shader`
+   directive for each copied shader, in the same order that you selected them.
 
 Pass `--help` for more CLI options, such as pointing at a different shaders
 checkout via `--repo`.
