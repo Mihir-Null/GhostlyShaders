@@ -1,0 +1,10 @@
+# Codex CLI artifacts
+.codex/
+codex.log
+
+# Python build outputs
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/

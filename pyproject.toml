@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghostly-shaders"
+version = "0.1.0"
+description = "TUI utility for browsing and applying Ghostty shaders"
+readme = "README.md"
+authors = [{name = "Codex Assistant"}]
+license = {text = "MIT"}
+requires-python = ">=3.9"
+
+[project.scripts]
+ghostly-shaders = "ghostly_shaders.__main__:main"
+
+[tool.setuptools]
+packages = ["ghostly_shaders"]
