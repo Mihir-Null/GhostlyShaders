@@ -28,7 +28,9 @@ ghostly-shaders
 ### Controls
 
 - `↑/↓` or `j/k` to navigate the shader list
-- `Enter` to copy the highlighted shader to your Ghostty config
+- `Space` to toggle the highlighted shader in/out of the selection queue
+- `Enter` copies every queued shader (or just the highlighted one if none queued)
+- `c` clears the current selection queue
 - `q` (or `Esc`) to exit the TUI
 
 ### What happens when you apply a shader?

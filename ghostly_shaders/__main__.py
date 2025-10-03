@@ -35,8 +35,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--shader-output",
         type=Path,
-        default=DEFAULT_SHADER_PATH,
-        help="Location where the selected shader will be copied.",
+        default=None,
+        help=(
+            "Location where the selected shader will be copied. "
+            "Defaults to the path referenced by the Ghostty config or "
+            f"{DEFAULT_SHADER_PATH}."
+        ),
     )
     parser.add_argument(
         "--no-config",
@@ -78,14 +82,23 @@ def _find_selected_index(shaders: List[Shader], current_digest: Optional[str]) -
 
 def main() -> None:
     args = _parse_args()
+    config_path = args.config.expanduser()
     shaders = discover_shaders(args.repo)
 
-    target_shader_path = args.shader_output.expanduser()
+    configured_shader = read_custom_shader_path(config_path=config_path)
+    if args.shader_output is not None:
+        target_shader_path = args.shader_output
+    elif configured_shader is not None:
+        target_shader_path = configured_shader
+    else:
+        target_shader_path = DEFAULT_SHADER_PATH
+
+    target_shader_path = target_shader_path.expanduser()
     current_digest = _file_digest(target_shader_path)
     selected_index = _find_selected_index(shaders, current_digest)
 
     def on_apply(shader: Shader) -> None:
-        _apply_shader(shader, target_shader_path, not args.no_config, args.config)
+        _apply_shader(shader, target_shader_path, not args.no_config, config_path)
 
     run_tui(shaders, on_apply, selected_index)
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import curses
-from typing import Callable, List
+from typing import Callable, List, Set
 
 from .shaders import Shader
 
@@ -23,6 +23,8 @@ def run_tui(
         highlight = initial_index
         top = 0
         message = ""
+        selected_order: List[int] = []
+        selected_set: Set[int] = set()
 
         while True:
             stdscr.erase()
@@ -36,7 +38,8 @@ def run_tui(
 
             for row, idx in enumerate(range(top, min(len(shaders), top + list_height))):
                 shader = shaders[idx]
-                label = shader.relative
+                prefix = "* " if idx in selected_set else "  "
+                label = f"{prefix}{shader.relative}"
                 truncated = label[: width - 1]
                 if idx == highlight:
                     stdscr.attron(curses.A_REVERSE)
@@ -45,7 +48,13 @@ def run_tui(
                 else:
                     stdscr.addstr(row, 0, truncated)
 
-            instructions = "↑/↓ or j/k to move • Enter to apply • q to quit"
+            selection_hint = (
+                f"selected: {len(selected_order)}" if selected_order else "no selection"
+            )
+            instructions = (
+                "↑/↓ or j/k move • Space toggle • Enter apply • c clear • q quit | "
+                f"{selection_hint}"
+            )
             stdscr.addstr(height - 2, 0, instructions[: width - 1])
             stdscr.addstr(height - 1, 0, message[: width - 1])
             stdscr.refresh()
@@ -55,13 +64,31 @@ def run_tui(
                 highlight = max(0, highlight - 1)
             elif key in (curses.KEY_DOWN, ord("j")):
                 highlight = min(len(shaders) - 1, highlight + 1)
+            elif key == ord(" "):
+                if highlight in selected_set:
+                    selected_set.remove(highlight)
+                    selected_order = [idx for idx in selected_order if idx != highlight]
+                else:
+                    selected_set.add(highlight)
+                    selected_order.append(highlight)
+            elif key in (ord("c"), ord("C")):
+                selected_set.clear()
+                selected_order.clear()
             elif key in (curses.KEY_ENTER, ord("\n"), ord("\r")):
+                targets: List[Shader]
+                if selected_order:
+                    targets = [shaders[idx] for idx in selected_order]
+                else:
+                    targets = [shaders[highlight]]
+
                 try:
-                    on_apply(shaders[highlight])
+                    for shader in targets:
+                        on_apply(shader)
                 except Exception as exc:  # pragma: no cover - surfaced via UI
                     message = f"Error: {exc}"
                 else:
-                    message = f"Applied {shaders[highlight].relative}"
+                    applied = ", ".join(shader.relative for shader in targets)
+                    message = f"Applied {applied}"
             elif key in (ord("q"), 27):
                 break
 

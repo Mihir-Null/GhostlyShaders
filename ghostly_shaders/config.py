@@ -19,7 +19,7 @@ def read_custom_shader_path(config_path: Path = DEFAULT_CONFIG_PATH) -> Optional
         if line.split("=", 1)[0].strip() != "custom-shader":
             continue
         _, value = raw_line.split("=", 1)
-        return Path(value.strip())
+        return Path(value.strip()).expanduser()
 
     return None
 
